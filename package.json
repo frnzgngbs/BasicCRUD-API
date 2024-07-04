@@ -1,0 +1,24 @@
+{
+	"name": "express_mongodb",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.mjs",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start:dev": "nodemon ./src/index.mjs",
+		"start": "node ./src/index.mjs"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"express": "^4.19.2",
+		"express-router": "^0.0.1",
+		"express-validator": "^7.1.0",
+		"mongoose": "^8.4.4"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.4"
+	},
+	"type": "module"
+}
