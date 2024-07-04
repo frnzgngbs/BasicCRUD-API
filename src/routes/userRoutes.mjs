@@ -15,12 +15,38 @@ router.get("/api/users", async (request, response) => {
 	} catch (err) {}
 });
 
+router.get("/api/users/:id", validateId, async (request, response) => {
+	const { id } = request.params;
+
+	const errors = validationResult(id);
+
+	if (!errors.isEmpty())
+		return response.status(404).json({ error: errors.array()[0].msg });
+
+	try {
+		const user = await User.findById(id).select("_id username email ").lean();
+
+		return response.status(200).json(user);
+	} catch (error) {
+		console.log("error");
+		return response.status(500).json({ error: error.message });
+	}
+});
+
 router.post("/api/users", async (req, res) => {
 	try {
 		const { username, email, password } = req.body;
 		const newUser = new User({ username, email, password });
 		await newUser.save();
-		res.status(201).json(newUser);
+
+		// Use toObject to convert Mongoose documents to JavaSript plain objects
+		const {
+			password: userPassword,
+			__v,
+			...userToBeReturned
+		} = newUser.toObject();
+
+		res.status(201).json(userToBeReturned);
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Server error" });
@@ -28,7 +54,7 @@ router.post("/api/users", async (req, res) => {
 });
 
 router.put(
-	"/api/user/:id",
+	"/api/users/:id",
 	[createUserValidator, validateId],
 	async (request, response) => {
 		const errors = validationResult(request);
@@ -57,7 +83,7 @@ router.put(
 	}
 );
 
-router.delete("/api/user/:id", validateId, async (request, response) => {
+router.delete("/api/users/:id", validateId, async (request, response) => {
 	const errors = validationResult(request);
 
 	if (!errors.isEmpty()) {
