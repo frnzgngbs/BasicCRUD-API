@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validationResult } from "express-validator";
 import {
-	createUserValidator,
+	userDetailsValidator,
 	validateId,
 } from "../schema/validator/UserValidator.mjs";
 import { User } from "../schema/model/UserModel.mjs";
@@ -33,7 +33,7 @@ router.get("/api/users/:id", validateId, async (request, response) => {
 	}
 });
 
-router.post("/api/users", async (req, res) => {
+router.post("/api/users/create", async (req, res) => {
 	try {
 		const { username, email, password } = req.body;
 		const newUser = new User({ username, email, password });
@@ -54,8 +54,8 @@ router.post("/api/users", async (req, res) => {
 });
 
 router.put(
-	"/api/users/:id",
-	[createUserValidator, validateId],
+	"/api/users/update/:id",
+	[userDetailsValidator, validateId],
 	async (request, response) => {
 		const errors = validationResult(request);
 
@@ -80,6 +80,37 @@ router.put(
 		}
 
 		// const updatedUser = await User.findByIdAndUpdate();
+	}
+);
+
+// For now lets just use a validator for ID and just disregard the cases for the response body.
+router.patch(
+	"/api/users/patch/:id",
+	[validateId],
+	async (request, response) => {
+		const {
+			params: { id },
+			body,
+		} = request;
+
+		const errors = validationResult(id);
+
+		if (!errors.isEmpty())
+			return response.status(400).json({ error: errors.array()[0].msg });
+		try {
+			const user = await User.findById(id);
+
+			Object.keys(body).forEach((key) => {
+				if (key !== "_id") user[key] = body[key];
+			});
+
+			await user.save();
+
+			return response.status(200).json({ id, ...body });
+		} catch (error) {
+			console.log(error);
+			return response.sendStatus(500);
+		}
 	}
 );
 
